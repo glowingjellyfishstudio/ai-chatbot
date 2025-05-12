@@ -1,51 +1,52 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const chatBox = document.getElementById("chat-box");
-    const userInput = document.getElementById("user-input");
-    const sendButton = document.getElementById("send-button");
+// Multilingual Support and Voice Interaction
 
-    const botResponses = {
-        "hello": "Hi there! How can I assist you today?",
-        "how are you": "I'm just a bot, but I'm here to help!",
-        "what is your name": "I'm your friendlyChatbot!",
-        "help": "Sure, let me know what you need help with. I'm here for you!",
-        "bye": "Goodbye!!",
-        "default": "I'm not sure I understand that. Can you rephrase?"
+// Google Translate API Demo Functionality
+async function translateText(text, targetLang) {
+    // Simulated translation for illustration (replace with a real API call)
+    const translations = {
+        'en': text,
+        'es': `Traducido: ${text}`,
+        'fr': `Traduit: ${text}`,
+        'de': `Übersetzt: ${text}`
     };
+    return translations[targetLang] || text;
+}
 
-    function addMessage(message, className) {
-        const messageDiv = document.createElement("div");
-        messageDiv.className = `chat-message ${className}`;
-        messageDiv.textContent = message;
-        chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
+// Chatbot Logic
+async function processMessage(message, language) {
+    const chatWindow = document.getElementById('chat-window');
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.textContent = `You: ${message}`;
+    chatWindow.appendChild(userMessageDiv);
 
-    function getBotResponse(userMessage) {
-        userMessage = userMessage.toLowerCase();
-        for (const key in botResponses) {
-            if (userMessage.includes(key)) {
-                return botResponses[key];
-            }
-        }
-        return botResponses["default"];
-    }
+    // Simulate chatbot response
+    const botResponse = `Response to: ${message}`;
+    const translatedResponse = await translateText(botResponse, language);
 
-    sendButton.addEventListener("click", () => {
-        const userMessage = userInput.value.trim();
-        if (userMessage) {
-            addMessage(userMessage, "user-message");
-            userInput.value = "";
+    const botMessageDiv = document.createElement('div');
+    botMessageDiv.textContent = `Bot: ${translatedResponse}`;
+    chatWindow.appendChild(botMessageDiv);
 
-            setTimeout(() => {
-                const botMessage = getBotResponse(userMessage);
-                addMessage(botMessage, "bot-message");
-            }, 500);
-        }
-    });
+    chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll
+}
 
-    userInput.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-            sendButton.click();
-        }
-    });
+// Voice Interaction (Speech Recognition and Synthesis)
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+recognition.lang = 'en-US';
+
+recognition.onresult = (event) => {
+    const userInput = event.results[0][0].transcript;
+    const language = document.getElementById('language-select').value;
+    processMessage(userInput, language);
+};
+
+document.getElementById('voice-button').addEventListener('click', () => {
+    recognition.start();
+});
+
+document.getElementById('send-button').addEventListener('click', () => {
+    const userInput = document.getElementById('user-input').value;
+    const language = document.getElementById('language-select').value;
+    processMessage(userInput, language);
+    document.getElementById('user-input').value = ''; // Clear input
 });
